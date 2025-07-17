@@ -1,12 +1,105 @@
-# React + Vite
+# Real Time Code Editor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, collaborative real-time code editor built with React, Monaco Editor, Socket.IO, and Express. Instantly share code, collaborate, and see changes live with multiple users in a shared room.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+- **Real-time collaborative code editing**
+- **Multiple language support** (JavaScript, Python, Java, C++)
+- **Room-based sessions**: Join or create a room with a unique ID
+- **Live user presence**: See who is in the room
+- **Typing indicators**: Know when someone is typing
+- **Copy room ID** for easy sharing
+- **Leave and rejoin rooms**
+- **Modern, responsive UI** powered by Tailwind CSS
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React, Vite, Monaco Editor, Tailwind CSS, Socket.IO Client
+- **Backend:** Node.js, Express, Socket.IO
+
+---
+
+## 📦 Installation & Setup
+
+### 1. Clone the repository
+
+```bash
+git clone <repo-url>
+cd Real time Code Editor
+```
+
+### 2. Install dependencies
+
+#### Backend
+
+```bash
+cd backend
+npm install
+```
+
+#### Frontend
+
+```bash
+cd ../frontend
+npm install
+```
+
+### 3. Start the servers
+
+#### Start backend server
+
+```bash
+cd ../backend
+npm start
+```
+
+#### Start frontend dev server
+
+```bash
+cd ../frontend
+npm run dev
+```
+
+- The frontend will run on [http://localhost:5173](http://localhost:5173)
+- The backend (Socket.IO server) will run on [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 💡 Usage
+
+1. Open the frontend in your browser.
+2. Enter a room ID and your name to join or create a room.
+3. Share the room ID with others to collaborate in real time.
+4. Select your preferred language and start coding together!
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 🙏 Acknowledgements
+
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+- [Socket.IO](https://socket.io/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [React](https://react.dev/)
