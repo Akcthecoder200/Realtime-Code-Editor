@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
+
 import path from "path";
 
 const app = express();
@@ -69,7 +70,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     if (currentRoom && currentUser) {
       rooms.get(currentRoom).delete(currentUser);
-      io.to(currentRoom).emit("user disconnected", Array.from(rooms.get(currentRoom)));
+      io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom)));
     }
     console.log("user Disconnected");
   });
@@ -77,14 +78,15 @@ io.on("connection", (socket) => {
 
 const port = process.env.PORT || 5000;
 
-// const __dirname = path.resolve();
+const __dirname = path.resolve();
 
-// app.use(express.static(path.join(__dirname, "/frontend/dist")));
+app.use(express.static(path.join(__dirname, "/frontend/dist")));
 
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
-// });
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "/frontend/dist/index.html"));
+});
 
 server.listen(port, () => {
   console.log("server is working on port 5000");
+  console.log(__dirname);
 });
