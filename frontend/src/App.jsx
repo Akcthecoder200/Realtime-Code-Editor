@@ -4,7 +4,7 @@ import Editor from "@monaco-editor/react";
 import { Tldraw, createTLStore, defaultShapeUtils } from "@tldraw/tldraw";
 import "tldraw/tldraw.css";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://realtime-code-editor-inag.onrender.com");
 
 const App = () => {
   const [joined, setJoined] = useState(false);
