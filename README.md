@@ -1,39 +1,64 @@
-# Real Time Code Editor
+# Real Time Code Editor & Collaborative Whiteboard
 
-A modern, collaborative real-time code editor built with React, Monaco Editor, Socket.IO, and Express. Instantly share code, collaborate, and see changes live with multiple users in a shared room.
+A full-stack web application for real-time collaborative code editing and drawing, featuring:
 
----
-
-## 🚀 Features
-
-- **Real-time collaborative code editing**
-- **Multiple language support** (JavaScript, Python, Java, C++)
-- **Room-based sessions**: Join or create a room with a unique ID
-- **Live user presence**: See who is in the room
-- **Typing indicators**: Know when someone is typing
-- **Copy room ID** for easy sharing
-- **Leave and rejoin rooms**
-- **Modern, responsive UI** powered by Tailwind CSS
+- **Live code editing** with Monaco Editor
+- **Multi-language support** (JavaScript, Python, Java, C++)
+- **Code execution** with output console
+- **Room-based collaboration** (join by Room ID)
+- **User presence** (see who is in the room, typing indicators)
+- **Real-time collaborative whiteboard** powered by [tldraw](https://tldraw.dev/)
+- **Persistent whiteboard state** per room
 
 ---
 
-## 🛠️ Tech Stack
+## Features
 
-- **Frontend:** React, Vite, Monaco Editor, Tailwind CSS, Socket.IO Client
+### 1. Real-Time Code Editor
+
+- Edit code collaboratively in real time using Monaco Editor
+- Language selection: JavaScript, Python, Java, C++
+- See who is typing
+- Code execution with output displayed in a console
+
+### 2. Collaborative Whiteboard
+
+- Draw, sketch, and annotate together using tldraw
+- All changes are synchronized in real time
+- New users joining a room receive the current whiteboard state
+
+### 3. Room System & User Presence
+
+- Create or join a room by Room ID
+- See a list of users in the room
+- Copy Room ID for sharing
+- Leave room at any time
+
+---
+
+## Technologies Used
+
+- **Frontend:** React, Vite, Tailwind CSS, Monaco Editor, tldraw
 - **Backend:** Node.js, Express, Socket.IO
+- **Code Execution:** [Piston API](https://github.com/engineer-man/piston)
 
 ---
 
-## 📦 Installation & Setup
+## Getting Started
 
-### 1. Clone the repository
+### Prerequisites
+
+- Node.js (v16+ recommended)
+- npm
+
+### 1. Clone the Repository
 
 ```bash
-git clone <repo-url>
-cd Real time Code Editor
+git clone https://github.com/yourusername/realtime-code-editor.git
+cd realtime-code-editor
 ```
 
-### 2. Install dependencies
+### 2. Install Dependencies
 
 #### Backend
 
@@ -49,57 +74,87 @@ cd ../frontend
 npm install
 ```
 
-### 3. Start the servers
+### 3. Environment Variables
 
-#### Start backend server
+- By default, the backend runs on port 5000.
+- The frontend expects the backend at `http://localhost:5000` (for local dev) or your deployed backend URL.
+- To use a different backend URL, update the `io()` call in `frontend/src/App.jsx`.
+
+### 4. Running Locally
+
+#### Start Backend
 
 ```bash
-cd ../backend
+cd backend
 npm start
 ```
 
-#### Start frontend dev server
+#### Start Frontend
 
 ```bash
-cd ../frontend
+cd frontend
 npm run dev
 ```
 
-- The frontend will run on [http://localhost:5173](http://localhost:5173)
-- The backend (Socket.IO server) will run on [http://localhost:5000](http://localhost:5000)
+- Visit `http://localhost:5173` (or the port Vite shows) in your browser.
+
+### 5. Deployment
+
+- The backend can be deployed to any Node.js-compatible host (e.g., Render, Heroku, Vercel serverless functions).
+- The frontend can be built with `npm run build` and served as static files.
+- Update the socket URL in `App.jsx` to your deployed backend.
 
 ---
 
-## 💡 Usage
+## Usage
 
-1. Open the frontend in your browser.
-2. Enter a room ID and your name to join or create a room.
-3. Share the room ID with others to collaborate in real time.
-4. Select your preferred language and start coding together!
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'Add some feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request
+1. **Join a Room:** Enter a Room ID and your name to join or create a room.
+2. **Collaborate:**
+   - Edit code together in real time.
+   - See who is in the room and who is typing.
+   - Select language and run code; see output in the console.
+   - Draw together on the whiteboard; all changes sync instantly.
+3. **Share:** Copy the Room ID and share with others to collaborate.
+4. **Leave Room:** Click 'Leave Room' to exit.
 
 ---
 
-## 📄 License
+## Project Structure
 
-This project is licensed under the MIT License.
+```
+Real time Code Editor/
+  backend/           # Express + Socket.IO server
+    index.js
+  frontend/          # React app (Vite)
+    src/
+      App.jsx        # Main app logic
+      ...
+    public/
+    ...
+  README.md
+  package.json
+```
 
 ---
 
-## 🙏 Acknowledgements
+## Dependencies
+
+- React, Vite, Tailwind CSS
+- @monaco-editor/react
+- @tldraw/tldraw
+- socket.io, socket.io-client
+- express, axios
+
+---
+
+## License
+
+MIT
+
+---
+
+## Credits
 
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-- [Socket.IO](https://socket.io/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [React](https://react.dev/)
+- [tldraw](https://tldraw.dev/)
+- [Piston API](https://github.com/engineer-man/piston)
