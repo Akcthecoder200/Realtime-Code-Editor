@@ -78,29 +78,6 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("languageUpdate", language);
   });
 
-  //tldraw
-  socket.on("whiteboard-update", ({ roomId, changes, fullState }) => {
-    // If a fullState is provided, update the room's state
-    if (fullState) {
-      whiteboardStates.set(roomId, fullState);
-    }
-    // Always broadcast the changes
-    socket.to(roomId).emit("whiteboard-update", changes);
-  });
-
-  // When a client requests the full whiteboard state, another client should respond
-  socket.on("request-whiteboard-state", () => {
-    socket.to(currentRoom).emit("request-whiteboard-state");
-  });
-
-  // When a client sends the full whiteboard state, store it and send to the requester
-  socket.on("whiteboard-state", ({ fullState, roomId }) => {
-    if (roomId && fullState) {
-      whiteboardStates.set(roomId, fullState);
-      socket.emit("whiteboard-state", { fullState }); // send to the requester
-    }
-  });
-
   socket.on("compileCode", async ({ code, roomId, language, version }) => {
     if (rooms.has(roomId)) {
       const room = rooms.get(roomId);

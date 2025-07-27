@@ -1,14 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
+import { v4 as uuidv4 } from "uuid";
 import io from "socket.io-client";
 import Editor from "@monaco-editor/react";
-import {
-  Tldraw,
-  createTLStore,
-  defaultShapeUtils,
-  loadSnapshot,
-} from "@tldraw/tldraw";
-
-import "tldraw/tldraw.css";
+import Whiteboard from "./components/Whiteboard";
 
 const socket = io("http://localhost:4000");
 
@@ -22,60 +16,10 @@ const App = () => {
   const [users, setUsers] = useState([]);
   const [typing, setTyping] = useState("");
   const [outPut, setOutPut] = useState("");
+  const [isExecuting, setIsExecuting] = useState(false);
   const [version] = useState("*");
 
-  const store = useMemo(
-    () => createTLStore({ shapeUtils: defaultShapeUtils }),
-    []
-  );
-
-  // Helper to get the full state from the store
-  const getFullWhiteboardState = () => {
-    // Use store.serialize() for full state
-    return store.serialize ? store.serialize() : null;
-  };
-
   useEffect(() => {
-    // const handleRemoteChanges = (remoteChanges) => {
-    //   store.applyRemoteChanges(remoteChanges);
-    // };
-
-    // Handler for receiving the full whiteboard state
-    const handleWhiteboardState = ({ fullState }) => {
-      if (fullState) {
-        loadSnapshot(store, fullState); // ✅ Correct usage
-      }
-    };
-
-    // Handler for when another client requests the full state
-    const handleRequestWhiteboardState = () => {
-      const fullState = getFullWhiteboardState();
-      if (fullState) {
-        socket.emit("whiteboard-state", { fullState, roomId });
-      }
-    };
-
-    // socket.on("whiteboard-update", handleRemoteChanges);
-    socket.on("whiteboard-state", handleWhiteboardState);
-    socket.on("request-whiteboard-state", handleRequestWhiteboardState);
-
-    // Listen for local changes and emit them
-    const cleanup = store.listen((localChanges, info = {}) => {
-      const { source } = info;
-
-      if (source === "loadSnapshot") {
-        const fullState = getFullWhiteboardState();
-        console.log("Local changes detected:", fullState);
-        socket.emit("whiteboard-update", {
-          roomId,
-          changes: localChanges,
-          fullState,
-        });
-      } else {
-        socket.emit("whiteboard-update", { roomId, changes: localChanges });
-      }
-    });
-
     socket.on("userJoined", (users) => {
       setUsers(users);
     });
@@ -85,7 +29,7 @@ const App = () => {
     });
 
     socket.on("userTyping", (user) => {
-      setTyping(`${user.slice(0, 8)}... is Typing`);
+      setTyping(`${user} is typing...`);
       setTimeout(() => setTyping(""), 2000);
     });
 
@@ -94,6 +38,7 @@ const App = () => {
     });
     socket.on("codeResponse", (response) => {
       setOutPut(response.run.output);
+      setIsExecuting(false);
     });
 
     return () => {
@@ -102,13 +47,8 @@ const App = () => {
       socket.off("userTyping");
       socket.off("languageUpdate");
       socket.off("codeResponse");
-
-      cleanup();
-      // socket.off("whiteboard-update", handleRemoteChanges);
-      socket.off("whiteboard-state", handleWhiteboardState);
-      socket.off("request-whiteboard-state", handleRequestWhiteboardState);
     };
-  }, [joined, store, roomId]);
+  }, [joined, roomId]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -126,6 +66,8 @@ const App = () => {
     if (roomId && userName) {
       socket.emit("join", { roomId, userName });
       setJoined(true);
+    } else {
+      alert("Enter Name and Room ID.");
     }
   };
 
@@ -156,6 +98,7 @@ const App = () => {
     socket.emit("languageChange", { roomId, language: newLanguage });
   };
   const runCode = () => {
+    setIsExecuting(true);
     socket.emit("compileCode", { code, roomId, language, version });
   };
 
@@ -166,26 +109,36 @@ const App = () => {
           <h1 className="mb-6 text-2xl font-bold text-gray-800">
             Join Code Room
           </h1>
-          <input
-            type="text"
-            placeholder="Room Id"
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-            className="w-full p-3 mb-4 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            className="w-full p-3 mb-4 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-          <button
-            onClick={joinRoom}
-            className="w-full p-3 bg-blue-500 text-white rounded font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Join Room
-          </button>
+          <form onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="text"
+              placeholder="Room Id"
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            <button
+              type="button"
+              onClick={() => setRoomId(uuidv4())}
+              className="self-start underline text-blue-500 mb-4"
+            >
+              Generate ID
+            </button>
+            <input
+              type="text"
+              placeholder="Your Name"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              className="w-full p-3 mb-4 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            <button
+              type="submit"
+              onClick={joinRoom}
+              className="w-full p-3 bg-blue-500 text-white rounded font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Join Room
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -198,7 +151,12 @@ const App = () => {
         className="p-6 bg-gray-800 text-gray-100 flex flex-col"
       >
         <div className="flex flex-col items-center mb-4">
-          <h2 className="mb-2 text-lg font-semibold">Code Room: {roomId}</h2>
+          <h2
+            className="mb-2 text-lg font-semibold max-w-full truncate"
+            title={roomId}
+          >
+            Room ID: {roomId}
+          </h2>
           <button
             onClick={copyRoomId}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-800 transition-colors"
@@ -220,7 +178,9 @@ const App = () => {
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-white text-base min-h-[24px]">{typing}</p>
+        <p className="mt-4 text-white text-base min-h-[24px] max-w-40 truncate">
+          {typing}
+        </p>
         <select
           className="mt-4 w-full p-2 bg-gray-700 text-white rounded"
           value={language}
@@ -252,10 +212,11 @@ const App = () => {
           }}
         />
         <button
-          className="run-btn bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded mt-4 transition-colors"
+          className="ml-2 run-btn bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded mt-4 transition-colors"
           onClick={runCode}
+          disabled={isExecuting}
         >
-          Execute
+          {isExecuting ? "Executing..." : "Run"}
         </button>
         <textarea
           className="output-console w-full mt-2 p-2 text-lg h-52 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -265,9 +226,7 @@ const App = () => {
         />
       </div>
       <div className="w-[40%] h-screen relative flex flex-col">
-        <div className="w-full h-full min-h-0">
-          <Tldraw store={store} />
-        </div>
+        <Whiteboard socket={socket} roomId={roomId} />
       </div>
     </div>
   );
