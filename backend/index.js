@@ -78,13 +78,7 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("languageUpdate", language);
   });
 
-  //whiteboard
-  // socket.on('drawing', ({ roomId, data }) => {
-  //   socket.to(roomId).emit('drawing', data);
-  // });
-  // socket.on('clear-board', (roomId) => {
-  //   socket.to(roomId).emit('clear-board');
-  // });
+ 
 
   //tldraw
   socket.on("whiteboard-update", ({ roomId, changes, fullState }) => {
@@ -156,3 +150,4 @@ app.get("/", (req, res) => {
 server.listen(port, () => {
   console.log(`server is working on port ${port}`);
 });
+

@@ -1,10 +1,16 @@
 import { useEffect, useState, useMemo } from "react";
 import io from "socket.io-client";
 import Editor from "@monaco-editor/react";
-import { Tldraw, createTLStore, defaultShapeUtils } from "@tldraw/tldraw";
+import {
+  Tldraw,
+  createTLStore,
+  defaultShapeUtils,
+  loadSnapshot,
+} from "@tldraw/tldraw";
+
 import "tldraw/tldraw.css";
 
-const socket = io("https://realtime-code-editor-inag.onrender.com");
+const socket = io("http://localhost:5000");
 
 const App = () => {
   const [joined, setJoined] = useState(false);
@@ -17,9 +23,6 @@ const App = () => {
   const [typing, setTyping] = useState("");
   const [outPut, setOutPut] = useState("");
   const [version] = useState("*");
-  // const canvasRef = useRef(null);
-  // const ctxRef = useRef(null);
-  // const [drawing, setDrawing] = useState(false);
 
   const store = useMemo(
     () => createTLStore({ shapeUtils: defaultShapeUtils }),
@@ -33,30 +36,14 @@ const App = () => {
   };
 
   useEffect(() => {
-    // if (!canvasRef.current) return;
-    // const canvas = canvasRef.current;
-    // canvas.width = window.innerWidth;
-    // canvas.height = window.innerHeight;
-
-    // const ctx = canvas.getContext("2d");
-    // ctx.lineCap = "round";
-    // ctx.strokeStyle = "#000";
-    // ctx.lineWidth = 2;
-    // ctxRef.current = ctx;
-    // socket.on("drawing", onDrawingEvent);
-
-    // socket.on("clear-board", clearCanvas);
-
-    //tldraw
-    // Handler for remote changes
-    const handleRemoteChanges = (remoteChanges) => {
-      store.applyRemoteChanges(remoteChanges);
-    };
+    // const handleRemoteChanges = (remoteChanges) => {
+    //   store.applyRemoteChanges(remoteChanges);
+    // };
 
     // Handler for receiving the full whiteboard state
     const handleWhiteboardState = ({ fullState }) => {
       if (fullState) {
-        store.loadSnapshot(fullState);
+        loadSnapshot(store, fullState); // ✅ Correct usage
       }
     };
 
@@ -68,15 +55,17 @@ const App = () => {
       }
     };
 
-    socket.on("whiteboard-update", handleRemoteChanges);
+    // socket.on("whiteboard-update", handleRemoteChanges);
     socket.on("whiteboard-state", handleWhiteboardState);
     socket.on("request-whiteboard-state", handleRequestWhiteboardState);
 
     // Listen for local changes and emit them
     const cleanup = store.listen((localChanges, info = {}) => {
       const { source } = info;
+
       if (source === "loadSnapshot") {
         const fullState = getFullWhiteboardState();
+        console.log("Local changes detected:", fullState);
         socket.emit("whiteboard-update", {
           roomId,
           changes: localChanges,
@@ -113,10 +102,9 @@ const App = () => {
       socket.off("userTyping");
       socket.off("languageUpdate");
       socket.off("codeResponse");
-      // socket.off("drawing");
-      // socket.off("clear-board");
+
       cleanup();
-      socket.off("whiteboard-update", handleRemoteChanges);
+      // socket.off("whiteboard-update", handleRemoteChanges);
       socket.off("whiteboard-state", handleWhiteboardState);
       socket.off("request-whiteboard-state", handleRequestWhiteboardState);
     };
@@ -141,54 +129,6 @@ const App = () => {
     }
   };
 
-  // const drawLine = (x0, y0, x1, y1, emit) => {
-  //   const ctx = ctxRef.current;
-  //   ctx.beginPath();
-  //   ctx.moveTo(x0, y0);
-  //   ctx.lineTo(x1, y1);
-  //   ctx.stroke();
-  //   ctx.closePath();
-
-  //   if (!emit) return;
-
-  //   socket.emit("drawing", {
-  //     roomId,
-  //     data: { x0, y0, x1, y1 },
-  //   });
-  // };
-
-  // const onMouseDown = (e) => {
-  //   setDrawing(true);
-  //   const { offsetX, offsetY } = e.nativeEvent;
-  //   ctxRef.current.beginPath();
-  //   ctxRef.current.moveTo(offsetX, offsetY);
-  //   ctxRef.current.stroke();
-  //   lastPoint.current = { x: offsetX, y: offsetY };
-  // };
-
-  // const lastPoint = useRef({ x: 0, y: 0 });
-
-  // const onMouseMove = (e) => {
-  //   if (!drawing) return;
-  //   const { offsetX, offsetY } = e.nativeEvent;
-  //   drawLine(lastPoint.current.x, lastPoint.current.y, offsetX, offsetY, true);
-  //   lastPoint.current = { x: offsetX, y: offsetY };
-  // };
-
-  // const onMouseUp = () => setDrawing(false);
-
-  // const onDrawingEvent = ({ x0, y0, x1, y1 }) => {
-  //   drawLine(x0, y0, x1, y1, false);
-  // };
-  // const clearCanvas = () => {
-  //   const canvas = canvasRef.current;
-  //   ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
-  // };
-
-  // const handleClear = () => {
-  //   clearCanvas();
-  //   socket.emit("clear-board", roomId);
-  // };
   const leaveRoom = () => {
     socket.emit("leaveRoom");
     setJoined(false);
@@ -321,24 +261,6 @@ const App = () => {
           placeholder="Output will appear here ..."
         />
       </div>
-      {/* <div style={{ width: "40%", height: "100vh" }}> */}
-      {/* <canvas
-          ref={canvasRef}
-          className="absolute top-0 left-0 w-full h-full bg-white"
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-        />
-        <button
-          className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white rounded-xl shadow-md"
-          onClick={handleClear}
-        >
-          Clear
-        </button> */}
-
-      {/* <Tldraw store={store} /> */}
-      {/* </div> */}
-      {/* Tldraw Whiteboard Area */}
       <div className="w-[40%] h-screen relative flex flex-col">
         <div className="w-full h-full min-h-0">
           <Tldraw store={store} />
