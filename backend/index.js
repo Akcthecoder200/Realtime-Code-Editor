@@ -78,8 +78,6 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("languageUpdate", language);
   });
 
- 
-
   //tldraw
   socket.on("whiteboard-update", ({ roomId, changes, fullState }) => {
     // If a fullState is provided, update the room's state
@@ -137,7 +135,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 
 const __dirname = path.resolve();
 
@@ -150,4 +148,3 @@ app.get("/", (req, res) => {
 server.listen(port, () => {
   console.log(`server is working on port ${port}`);
 });
-

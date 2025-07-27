@@ -10,7 +10,7 @@ import {
 
 import "tldraw/tldraw.css";
 
-const socket = io("http://localhost:5000");
+const socket = io("http://localhost:4000");
 
 const App = () => {
   const [joined, setJoined] = useState(false);
@@ -212,8 +212,11 @@ const App = () => {
         <h3 className="mt-6 mb-2 text-base font-medium">Users in Room:</h3>
         <ul className="list-none">
           {users.map((user, index) => (
-            <li key={index} className="p-2 text-sm bg-gray-600 mt-1 rounded">
-              {user.slice(0, 8)}...
+            <li
+              key={index}
+              className="p-2 text-sm bg-gray-600 mt-1 rounded max-w-full truncate"
+            >
+              {user}
             </li>
           ))}
         </ul>
