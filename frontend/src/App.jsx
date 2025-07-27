@@ -4,7 +4,7 @@ import io from "socket.io-client";
 import Editor from "@monaco-editor/react";
 import Whiteboard from "./components/Whiteboard";
 
-const socket = io("http://localhost:4000");
+const socket = io("https://realtime-code-editor-inag.onrender.com/");
 
 const App = () => {
   const [joined, setJoined] = useState(false);
