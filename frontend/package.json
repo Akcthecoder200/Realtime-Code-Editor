@@ -14,8 +14,10 @@
     "@tailwindcss/vite": "^4.1.11",
     "@tldraw/sync": "^3.14.2",
     "@tldraw/tldraw": "^3.14.2",
+    "lucide-react": "^0.526.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-router-dom": "^7.7.1",
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.11",
     "uuid": "^11.1.0"

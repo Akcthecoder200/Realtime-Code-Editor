@@ -18,8 +18,6 @@ const rooms = new Map();
 const whiteboardStates = new Map(); // roomId -> latest tldraw document state
 
 io.on("connection", (socket) => {
-  console.log("User Connected", socket.id);
-
   let currentRoom = null;
   let currentUser = null;
 
@@ -108,7 +106,6 @@ io.on("connection", (socket) => {
         whiteboardStates.delete(currentRoom);
       }
     }
-    console.log("user Disconnected");
   });
 });
 
