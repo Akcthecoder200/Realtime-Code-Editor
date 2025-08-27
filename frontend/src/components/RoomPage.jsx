@@ -1,6 +1,7 @@
+
 import { useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-
+import { FaUsers, FaCopy, FaSignOutAlt, FaChalkboardTeacher, FaCode, FaUserPlus, FaRandom } from "react-icons/fa";
 import Editor from "@monaco-editor/react";
 import Whiteboard from "./Whiteboard";
 import { Roomcontext } from "../context/RoomContext";
@@ -103,40 +104,59 @@ const RoomPage = () => {
   };
 
   if (!joined) {
+    const handleBack = () => {
+      // Navigate to landing page (index.html or root)
+      window.location.href = "/";
+    };
     return (
-      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-400 to-purple-700">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center w-80">
-          <h1 className="mb-6 text-2xl font-bold text-gray-800">
-            Join Code Room
-          </h1>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="text"
-              placeholder="Room Id"
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            <button
-              type="button"
-              onClick={() => setRoomId(uuidv4())}
-              className="self-start underline text-blue-500 mb-4"
-            >
-              Generate ID
-            </button>
-            <input
-              type="text"
-              placeholder="Your Name"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              className="w-full p-3 mb-4 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400">
+        <div className="bg-white/90 p-10 rounded-2xl shadow-2xl text-center w-96 border border-purple-200 relative">
+          <button
+            onClick={handleBack}
+            className="absolute left-4 top-4 flex items-center gap-1 text-purple-500 hover:text-purple-700 font-semibold text-base px-3 py-1 bg-purple-100 rounded-full shadow-sm transition-colors"
+            title="Back"
+          >
+            <svg xmlns='http://www.w3.org/2000/svg' className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            Back
+          </button>
+          <div className="flex items-center justify-center gap-3 mb-6 mt-2">
+            <FaChalkboardTeacher className="text-3xl text-purple-600 animate-pulse" />
+            <h1 className="text-3xl font-extrabold text-gray-800 tracking-wide drop-shadow-lg">Join Code Room</h1>
+          </div>
+          <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                placeholder="Room Id"
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-purple-400 pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setRoomId(uuidv4())}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-500 hover:text-purple-700"
+                title="Generate Random Room ID"
+              >
+                <FaRandom className="text-xl" />
+              </button>
+            </div>
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                placeholder="Your Name"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-purple-400 pr-12"
+              />
+              <FaUserPlus className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 text-lg" />
+            </div>
             <button
               type="submit"
               onClick={joinRoom}
-              className="w-full p-3 bg-blue-500 text-white rounded font-semibold hover:bg-blue-700 transition-colors"
+              className="w-full p-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded font-bold shadow-md hover:from-purple-600 hover:to-blue-600 transition-colors flex items-center justify-center gap-2"
             >
-              Join Room
+              <FaUsers className="text-lg" /> Join Room
             </button>
           </form>
         </div>
@@ -145,44 +165,57 @@ const RoomPage = () => {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+      {/* Sidebar */}
       <div
         style={{ width: "20%" }}
-        className="p-6 bg-gray-800 text-gray-100 flex flex-col"
+        className="p-6 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700 text-gray-100 flex flex-col shadow-2xl border-r border-purple-200 z-10"
       >
-        <div className="flex flex-col items-center mb-4">
-          <h2
-            className="mb-2 text-lg font-semibold max-w-full truncate"
-            title={roomId}
-          >
-            Room ID: {roomId}
-          </h2>
-          <button
-            onClick={copyRoomId}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-800 transition-colors"
-          >
-            Copy Id
-          </button>
+        <div className="flex flex-col items-center mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <FaCode className="text-xl text-green-400" />
+            <h2
+              className="text-lg font-bold max-w-full truncate tracking-wide"
+              title={roomId}
+            >
+              Room ID
+            </h2>
+            <button
+              onClick={copyRoomId}
+              className="ml-2 px-2 py-1 bg-blue-600 hover:bg-blue-800 text-white rounded transition-colors flex items-center gap-1 text-xs"
+              title="Copy Room ID"
+            >
+              <FaCopy />
+              Copy
+            </button>
+          </div>
+          <span className="text-xs bg-white/10 px-3 py-1 rounded-full font-mono tracking-wider border border-white/20 text-purple-200">
+            {roomId}
+          </span>
           {copySuccess && (
-            <span className="ml-2 text-green-400 text-sm">{copySuccess}</span>
+            <span className="mt-2 text-green-400 text-sm animate-pulse">{copySuccess}</span>
           )}
         </div>
-        <h3 className="mt-6 mb-2 text-base font-medium">Users in Room:</h3>
-        <ul className="list-none">
+        <h3 className="mt-4 mb-2 text-base font-semibold flex items-center gap-2">
+          <FaUsers className="text-lg text-blue-300" /> Users in Room
+        </h3>
+        <ul className="list-none max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-400 scrollbar-track-gray-700">
           {users.map((user, index) => (
             <li
               key={index}
-              className="p-2 text-sm bg-gray-600 mt-1 rounded max-w-full truncate"
+              className="p-2 text-sm bg-gray-600 mt-1 rounded max-w-full truncate flex items-center gap-2"
             >
+              <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
               {user}
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-white text-base min-h-[24px] max-w-40 truncate">
+        <p className="mt-4 text-white text-base min-h-[24px] max-w-40 truncate italic">
           {typing}
         </p>
+        <label className="mt-4 text-sm font-medium text-purple-200">Language</label>
         <select
-          className="mt-4 w-full p-2 bg-gray-700 text-white rounded"
+          className="mt-1 w-full p-2 bg-gray-700 text-white rounded border border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
           value={language}
           onChange={handleLanguageChange}
         >
@@ -192,39 +225,47 @@ const RoomPage = () => {
           <option value="cpp">C++</option>
         </select>
         <button
-          className="mt-4 w-full p-3 bg-red-500 text-white rounded font-semibold hover:bg-red-700 transition-colors"
+          className="mt-6 w-full p-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded font-semibold hover:from-red-600 hover:to-pink-600 transition-colors flex items-center justify-center gap-2"
           onClick={leaveRoom}
         >
-          Leave Room
+          <FaSignOutAlt className="text-lg" /> Leave Room
         </button>
       </div>
-      <div style={{ width: "40%" }} className="bg-white">
-        <Editor
-          height={"60%"}
-          defaultLanguage={language}
-          language={language}
-          value={code}
-          onChange={handleCodeChange}
-          theme="vs-dark"
-          options={{
-            minimap: { enabled: false },
-            fontSize: 14,
-          }}
-        />
-        <button
-          className="ml-2 run-btn bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded mt-4 transition-colors"
-          onClick={runCode}
-          disabled={isExecuting}
-        >
-          {isExecuting ? "Executing..." : "Run"}
-        </button>
-        <textarea
-          className="output-console w-full mt-2 p-2 text-lg h-52 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-          value={outPut}
-          readOnly
-          placeholder="Output will appear here ..."
-        />
+      {/* Code Editor */}
+      <div style={{ width: "40%" }} className="bg-white/90 flex flex-col border-r border-purple-200 shadow-lg">
+        <div className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md z-10">
+          <FaCode className="text-2xl animate-pulse" />
+          <h2 className="text-xl font-bold tracking-wide drop-shadow-lg">Collaborative Code Editor</h2>
+        </div>
+        <div className="flex-1 flex flex-col p-4">
+          <Editor
+            height={"60%"}
+            defaultLanguage={language}
+            language={language}
+            value={code}
+            onChange={handleCodeChange}
+            theme="vs-dark"
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+            }}
+          />
+          <button
+            className="ml-2 run-btn bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white font-semibold py-2 px-4 rounded mt-4 transition-colors flex items-center gap-2 w-fit shadow-lg"
+            onClick={runCode}
+            disabled={isExecuting}
+          >
+            <FaCode className="text-lg" /> {isExecuting ? "Executing..." : "Run"}
+          </button>
+          <textarea
+            className="output-console w-full mt-4 p-2 text-lg h-40 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 shadow-inner"
+            value={outPut}
+            readOnly
+            placeholder="Output will appear here ..."
+          />
+        </div>
       </div>
+      {/* Whiteboard */}
       <div className="w-[40%] h-screen relative flex flex-col">
         <Whiteboard socket={socket} roomId={roomId} />
       </div>
