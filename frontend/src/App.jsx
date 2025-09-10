@@ -7,7 +7,17 @@ import RoomPage from "./components/RoomPage";
 import { Roomcontext } from "./context/RoomContext";
 import { useState } from "react";
 
-const socket = io("https://realtime-code-editor-inag.onrender.com/");
+const socket = io("https://realtime-code-editor-inag.onrender.com/", {
+  transports: ['websocket', 'polling'],
+  upgrade: true,
+  rememberUpgrade: true,
+  timeout: 20000,
+  forceNew: false,
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionAttempts: 5,
+  maxReconnectionAttempts: 5,
+});
 
 const App = () => {
   const [roomId, setRoomId] = useState();

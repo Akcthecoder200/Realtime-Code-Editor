@@ -22,6 +22,7 @@ const RoomPage = () => {
   const [outPut, setOutPut] = useState("");
   const [isExecuting, setIsExecuting] = useState(false);
   const [version] = useState("*");
+  const [connectionStatus, setConnectionStatus] = useState("connected");
 
   // Check for persisted session on component mount
   useEffect(() => {
@@ -43,6 +44,31 @@ const RoomPage = () => {
   }, [urlRoomId, roomId, setRoomId, socket]);
 
   useEffect(() => {
+    // Socket connection status monitoring
+    socket.on("connect", () => {
+      setConnectionStatus("connected");
+      console.log("✅ Connected to server");
+    });
+
+    socket.on("disconnect", () => {
+      setConnectionStatus("disconnected");
+      console.log("❌ Disconnected from server");
+    });
+
+    socket.on("reconnect", () => {
+      setConnectionStatus("connected");
+      console.log("🔄 Reconnected to server");
+      // Re-join room if we were in one
+      if (joined && roomId && userName) {
+        socket.emit("join", { roomId, userName });
+      }
+    });
+
+    socket.on("connect_error", (error) => {
+      setConnectionStatus("error");
+      console.error("Connection error:", error);
+    });
+
     socket.on("userJoined", (users) => {
       setUsers(users);
     });
@@ -65,14 +91,24 @@ const RoomPage = () => {
       setIsExecuting(false);
     });
 
+    socket.on("error", (error) => {
+      console.error("Socket error:", error);
+      alert(error.message || "An error occurred");
+    });
+
     return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("reconnect");
+      socket.off("connect_error");
       socket.off("userJoined");
       socket.off("codeUpdate");
       socket.off("userTyping");
       socket.off("languageUpdate");
       socket.off("codeResponse");
+      socket.off("error");
     };
-  }, [socket, joined, roomId]);
+  }, [socket, joined, roomId, userName]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -128,8 +164,15 @@ const RoomPage = () => {
 
   const handleCodeChange = (newCode) => {
     setCode(newCode);
+    
+    // Emit code change immediately for real-time collaboration
     socket.emit("codeChange", { roomId, code: newCode });
-    socket.emit("typing", { roomId, userName });
+    
+    // Debounce typing indicator to reduce spam
+    clearTimeout(window.typingTimeout);
+    window.typingTimeout = setTimeout(() => {
+      socket.emit("typing", { roomId, userName });
+    }, 150);
   };
 
   const handleLanguageChange = (e) => {
@@ -233,6 +276,17 @@ const RoomPage = () => {
           <span className="text-xs bg-white/10 px-3 py-1 rounded-full font-mono tracking-wider border border-white/20 text-purple-200">
             {roomId}
           </span>
+          <div className={`flex items-center gap-2 mt-2 text-xs ${
+            connectionStatus === "connected" ? "text-green-400" : 
+            connectionStatus === "disconnected" ? "text-red-400" : "text-yellow-400"
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === "connected" ? "bg-green-400 animate-pulse" : 
+              connectionStatus === "disconnected" ? "bg-red-400" : "bg-yellow-400"
+            }`}></div>
+            {connectionStatus === "connected" ? "Connected" : 
+             connectionStatus === "disconnected" ? "Disconnected" : "Connecting..."}
+          </div>
           {copySuccess && (
             <span className="mt-2 text-green-400 text-sm animate-pulse">{copySuccess}</span>
           )}
@@ -289,6 +343,23 @@ const RoomPage = () => {
             options={{
               minimap: { enabled: false },
               fontSize: 14,
+              lineNumbers: "on",
+              roundedSelection: false,
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+              tabSize: 2,
+              insertSpaces: true,
+              wordWrap: "on",
+              formatOnType: true,
+              formatOnPaste: true,
+              quickSuggestions: true,
+              suggestOnTriggerCharacters: true,
+              acceptSuggestionOnEnter: "on",
+              bracketPairColorization: { enabled: true },
+              guides: {
+                bracketPairs: true,
+                indentation: true,
+              },
             }}
           />
           <button

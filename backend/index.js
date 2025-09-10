@@ -10,7 +10,13 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
+    methods: ["GET", "POST"],
   },
+  // Optimize for real-time performance
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
 });
 
 // In-memory storage
@@ -19,43 +25,57 @@ const whiteboardStates = new Map();
 
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  console.log(`✅ User connected: ${socket.id} at ${new Date().toISOString()}`);
   
   let currentRoom = null;
   let currentUser = null;
 
   socket.on("join", ({ roomId, userName }) => {
-    if (currentRoom) {
-      socket.leave(currentRoom);
-      rooms.get(currentRoom)?.delete(currentUser);
-      io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom) || []));
-    }
+    try {
+      if (currentRoom) {
+        socket.leave(currentRoom);
+        rooms.get(currentRoom)?.delete(currentUser);
+        io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom) || []));
+        console.log(`🔄 User ${currentUser} left room ${currentRoom}`);
+      }
 
-    currentRoom = roomId;
-    currentUser = userName;
+      currentRoom = roomId;
+      currentUser = userName;
 
-    socket.join(roomId);
+      socket.join(roomId);
 
-    if (!rooms.has(roomId)) {
-      rooms.set(roomId, new Set());
-    }
+      if (!rooms.has(roomId)) {
+        rooms.set(roomId, new Set());
+      }
 
-    rooms.get(roomId).add(userName);
-    io.to(roomId).emit("userJoined", Array.from(rooms.get(currentRoom)));
+      rooms.get(roomId).add(userName);
+      io.to(roomId).emit("userJoined", Array.from(rooms.get(currentRoom)));
+      
+      console.log(`🎯 User ${userName} joined room ${roomId}. Total users: ${rooms.get(roomId).size}`);
 
-    // When a user joins, send them the current whiteboard state if it exists
-    if (whiteboardStates.has(roomId)) {
-      socket.emit("whiteboard-state", {
-        fullState: whiteboardStates.get(roomId),
-      });
-    } else {
-      // If no state, request it from other clients in the room
-      socket.to(roomId).emit("request-whiteboard-state");
+      // When a user joins, send them the current whiteboard state if it exists
+      if (whiteboardStates.has(roomId)) {
+        socket.emit("whiteboard-state", {
+          fullState: whiteboardStates.get(roomId),
+        });
+      } else {
+        // If no state, request it from other clients in the room
+        socket.to(roomId).emit("request-whiteboard-state");
+      }
+    } catch (error) {
+      console.error("❌ Error in join event:", error);
+      socket.emit("error", { message: "Failed to join room" });
     }
   });
 
   socket.on("codeChange", ({ roomId, code }) => {
-    socket.to(roomId).emit("codeUpdate", code);
+    try {
+      // Broadcast immediately to all other users in the room
+      socket.to(roomId).emit("codeUpdate", code);
+      console.log(`📝 Code update broadcasted to room ${roomId}`);
+    } catch (error) {
+      console.error("❌ Error in codeChange event:", error);
+    }
   });
 
   socket.on("leaveRoom", () => {
