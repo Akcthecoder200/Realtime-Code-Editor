@@ -1,5 +1,6 @@
 
 import { useContext, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { FaUsers, FaCopy, FaSignOutAlt, FaChalkboardTeacher, FaCode, FaUserPlus, FaRandom } from "react-icons/fa";
 import Editor from "@monaco-editor/react";
@@ -8,8 +9,10 @@ import { Roomcontext } from "../context/RoomContext";
 
 const RoomPage = () => {
   const { socket, roomId, setRoomId } = useContext(Roomcontext);
+  const { roomId: urlRoomId } = useParams();
+  const navigate = useNavigate();
+  
   const [joined, setJoined] = useState(false);
-
   const [userName, setUserName] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [code, setCode] = useState("// start code here");
@@ -19,6 +22,25 @@ const RoomPage = () => {
   const [outPut, setOutPut] = useState("");
   const [isExecuting, setIsExecuting] = useState(false);
   const [version] = useState("*");
+
+  // Check for persisted session on component mount
+  useEffect(() => {
+    const savedSession = localStorage.getItem('codeEditorSession');
+    const currentRoomId = urlRoomId || roomId;
+    
+    if (savedSession && currentRoomId) {
+      const session = JSON.parse(savedSession);
+      if (session.roomId === currentRoomId && session.userName) {
+        setRoomId(currentRoomId);
+        setUserName(session.userName);
+        setJoined(true);
+        // Auto-rejoin the room
+        socket.emit("join", { roomId: currentRoomId, userName: session.userName });
+      }
+    } else if (currentRoomId && !roomId) {
+      setRoomId(currentRoomId);
+    }
+  }, [urlRoomId, roomId, setRoomId, socket]);
 
   useEffect(() => {
     socket.on("userJoined", (users) => {
@@ -37,6 +59,7 @@ const RoomPage = () => {
     socket.on("languageUpdate", (newLanguage) => {
       setLanguage(newLanguage);
     });
+    
     socket.on("codeResponse", (response) => {
       setOutPut(response.run.output);
       setIsExecuting(false);
@@ -67,6 +90,16 @@ const RoomPage = () => {
     if (roomId && userName) {
       socket.emit("join", { roomId, userName });
       setJoined(true);
+      
+      // Save session to localStorage
+      localStorage.setItem('codeEditorSession', JSON.stringify({
+        roomId,
+        userName,
+        timestamp: Date.now()
+      }));
+      
+      // Update URL to include room ID
+      navigate(`/room/${roomId}`, { replace: true });
     } else {
       alert("Enter Name and Room ID.");
     }
@@ -79,6 +112,12 @@ const RoomPage = () => {
     setUserName("");
     setCode("// start code here");
     setLanguage("javascript");
+    
+    // Clear session from localStorage
+    localStorage.removeItem('codeEditorSession');
+    
+    // Navigate back to landing page
+    navigate("/", { replace: true });
   };
 
   const copyRoomId = () => {
@@ -98,6 +137,7 @@ const RoomPage = () => {
     setLanguage(newLanguage);
     socket.emit("languageChange", { roomId, language: newLanguage });
   };
+  
   const runCode = () => {
     setIsExecuting(true);
     socket.emit("compileCode", { code, roomId, language, version });
@@ -106,8 +146,9 @@ const RoomPage = () => {
   if (!joined) {
     const handleBack = () => {
       // Navigate to landing page (index.html or root)
-      window.location.href = "/";
+      navigate("/");
     };
+    
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400">
         <div className="bg-white/90 p-10 rounded-2xl shadow-2xl text-center w-96 border border-purple-200 relative">
@@ -128,7 +169,7 @@ const RoomPage = () => {
               <input
                 type="text"
                 placeholder="Room Id"
-                value={roomId}
+                value={roomId || ""}
                 onChange={(e) => setRoomId(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-purple-400 pr-12"
               />

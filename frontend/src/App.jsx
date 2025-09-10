@@ -17,6 +17,7 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/room/:roomId?" element={<RoomPage />} />
           <Route path="/roompage" element={<RoomPage />} />
         </Routes>
       </BrowserRouter>
